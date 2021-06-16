@@ -112,7 +112,7 @@ def to_timeseries_ESIOS(writer, df_list, steps, names):
         current_df = current_df.resample("1H").sum()
         current_df.columns = [names[i]]
         print(names[i])
-        for j in range(steps[i]):
+        for j in range(steps[i] - 1):
             current_df[f"{current_df.columns[0]}-{j+1}"] = current_df[current_df.columns[0]
                                                                       ].shift(j+1)
 
@@ -292,7 +292,7 @@ class generator:
 
         self.labelframe_precio = tk.LabelFrame(top)
         self.labelframe_precio.place(
-            relx=0.04, rely=0.024, height=70, relwidth=0.9)
+            relx=0.04, rely=0.024, height=70, relwidth=0.92)
         self.labelframe_precio.configure(relief='groove')
         self.labelframe_precio.configure(foreground="black")
         self.labelframe_precio.configure(text='''Precio tiempo real''')
