@@ -112,7 +112,7 @@ def to_timeseries_ESIOS(writer, df_list, steps, names):
         current_df = current_df.resample("1H").sum()
         current_df.columns = [names[i]]
         print(names[i])
-        for j in range(steps[i] - 1):
+        for j in range(steps[i]):
             current_df[f"{current_df.columns[0]}-{j+1}"] = current_df[current_df.columns[0]
                                                                       ].shift(j+1)
 
@@ -150,10 +150,10 @@ def to_timeseries_GAS(writer, start, end):
     gas_data = gas_data[gas_data.Product.isin(products)]
     gas_data = gas_data[start:end]
     date = gas_data.index
-    print(gas_data.columns)
     product = gas_data['Product'][:]
     gas_data.drop(['Product'], axis=1, inplace=True)
     gas_data.index = [date, product]
+    gas_data = gas_data.loc[~gas_data.index.duplicated(), :]
     gas_data.reindex(products, level=1)
     print(gas_data)
     gas_data.to_excel(writer, sheet_name="Precio Gas Natural")
@@ -251,15 +251,11 @@ class generator:
             print("Error escribiendo de ESIOS")
             print(e)
 
-        try:
-            if generator_support.gas_in.get():
-                to_timeseries_GAS(writer,
-                                  datetime.combine(
-                                      self.from_gas.get_date(), datetime.min.time()),
-                                  datetime.combine(self.to_gas.get_date(), datetime.min.time()))
-        except Exception as e:
-            print("Error escribiendo de ESIOS")
-            print(e)
+        if generator_support.gas_in.get():
+            to_timeseries_GAS(writer,
+                                datetime.combine(
+                                    self.from_gas.get_date(), datetime.min.time()),
+                                datetime.combine(self.to_gas.get_date(), datetime.min.time()))
 
         try:
             if generator_support.co2_in.get():
@@ -268,7 +264,7 @@ class generator:
                                       self.from_co2.get_date(), datetime.min.time()),
                                   datetime.combine(self.to_co2.get_date(), datetime.min.time()))
         except Exception as e:
-            print("Error escribiendo de ESIOS")
+            print("Error escribiendo de CO2")
             print(e)
         messagebox.showinfo(title="Generador dataset", message="Hecho")
 
@@ -292,7 +288,7 @@ class generator:
 
         self.labelframe_precio = tk.LabelFrame(top)
         self.labelframe_precio.place(
-            relx=0.04, rely=0.024, height=70, relwidth=0.92)
+            relx=0.04, rely=0.024, height=70, relwidth=0.9)
         self.labelframe_precio.configure(relief='groove')
         self.labelframe_precio.configure(foreground="black")
         self.labelframe_precio.configure(text='''Precio tiempo real''')
